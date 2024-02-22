@@ -3,7 +3,7 @@ import Checkbox from './Checkbox'
 // import Overlayer from './Overlayer'
 import './Table.css'
 
-const Table = ({ data,onItemSelect,onDelete,selectEdit }) => {
+const Table = ({ data,onItemSelect,onDelete,selectEdit,allSelect }) => {
 
   return (
     <>
@@ -11,7 +11,7 @@ const Table = ({ data,onItemSelect,onDelete,selectEdit }) => {
     <table>
         <thead>
             <tr>
-                <th>checkbox</th>
+                <th><input type='checkbox' onChange={allSelect} /></th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>

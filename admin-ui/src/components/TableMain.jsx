@@ -29,6 +29,19 @@ const TableMain = () => {
         setDisplayedData(filteredData)
     },[page, userData])
 
+    function allSelect(checked){
+           if(checked){
+            console.log(displayedData)
+            setSelectedData(displayedData.map((item) =>item.id))  
+            console.log(displayedData)
+            
+           }
+           else{
+            setSelectedData([])
+           }
+       
+    }
+
     function onItemSelect(checked, value){
         if(checked){
             setSelectedData((cur) => [...cur, value])
@@ -46,17 +59,34 @@ const TableMain = () => {
     }
     function selectEdit(id){
         setIsOpen(true);
-        setCurrentSelectEdit((curr) => curr.filter((item) => id=== item.id))
+        setCurrentSelectEdit(id)
         console.log(id)
 
+    }
+    function handleEditSubmit(e){
+        e.preventDefault();
+        console.log(userData)
+        setUserData((cur) => cur.map((item) => {
+            if(item.id === currentSelectEdit){
+              return{
+                name:e.target.name.value,
+                email:e.target.email.value,
+                role:e.target.role.value,
+                id:item.id
+              }
+            }else{
+                return item
+            }
+        }))
+        setIsOpen(false)
     }
     
 
     
   return (
     <div>
-        <Table data={displayedData} onItemSelect={onItemSelect} onDelete={onDelete} selectEdit={selectEdit} isOpen={isOpen}/>
-        {isOpen && <EditAction  setIsOpen={setIsOpen}/>}
+        <Table data={displayedData} onItemSelect={onItemSelect} onDelete={onDelete} selectEdit={selectEdit} isOpen={isOpen} allSelect={allSelect}/>
+        {isOpen && <EditAction  setIsOpen={setIsOpen} userData={userData.filter((item) => item.id === currentSelectEdit)} handleEditSubmit={handleEditSubmit}/>}
         <button disabled={selectedData.length === 0} onClick={deleteSelected}>Delete Selected</button>
         <Pagination 
             totalPages={Math.floor(userData.length / MAX_ROWS)}
