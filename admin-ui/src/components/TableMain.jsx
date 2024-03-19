@@ -4,6 +4,7 @@ import Table from './Table'
 import Pagination from './Pagination'
 import { MAX_ROWS } from '../utils/constants/constant'
 import EditAction from './EditAction'
+import SearchBox from './SearchBox'
 
 
 
@@ -14,6 +15,9 @@ const TableMain = () => {
     const [selectedData,setSelectedData]=useState([])
     const [isOpen,setIsOpen]=useState(false)
     const [currentSelectEdit,setCurrentSelectEdit]=useState(null)
+    const [search,setSearch] = useState([])
+    const [totalPage,setTotalPage]=useState(-1)
+
 
     useEffect(()=>{
         fetchUserData()
@@ -22,19 +26,28 @@ const TableMain = () => {
     async function fetchUserData() {
         const data = await fetchUsers();
         setUserData(data);
+        setTotalPage(Math.floor(data.length / MAX_ROWS))
     }
 
     useEffect(()=>{
-        const filteredData = userData.filter((_,index) => (page - 1) * MAX_ROWS <= index && index < page * MAX_ROWS)
+        let filteredData=[]
+        console.log(search)
+        if(search.length !== 0){
+            const data = userData.filter((item) => search.includes(item.id))
+            setTotalPage(Math.floor(data.length / MAX_ROWS))
+            filteredData = data.filter((item,index) => (page - 1) * MAX_ROWS <= index && index < page * MAX_ROWS )
+        }else{
+            filteredData = userData.filter((item,index) => (page - 1) * MAX_ROWS <= index && index < page * MAX_ROWS)
+            setTotalPage(Math.floor(userData.length / MAX_ROWS))
+        }
         setDisplayedData(filteredData)
-    },[page, userData])
+        
+    },[page, userData,search])
 
     function allSelect(checked){
            if(checked){
-            console.log(displayedData)
             setSelectedData(displayedData.map((item) =>item.id))  
             console.log(displayedData)
-            
            }
            else{
             setSelectedData([])
@@ -80,19 +93,27 @@ const TableMain = () => {
         }))
         setIsOpen(false)
     }
+    function handleChange(e){
+        const key=e.target.value;
+        const result=userData.filter((item) => item.name.toLowerCase().includes(key) || item.email.toLowerCase().includes(key) || item.role.toLowerCase().includes(key)).map((item) => item.id);
+        setSearch(result)
+        setPage(1)
+    }
     
 
     
   return (
     <div>
-        <Table data={displayedData} onItemSelect={onItemSelect} onDelete={onDelete} selectEdit={selectEdit} isOpen={isOpen} allSelect={allSelect}/>
+        <SearchBox handleChange={handleChange}/>
+        <Table data={displayedData} onItemSelect={onItemSelect} onDelete={onDelete} selectEdit={selectEdit} isOpen={isOpen} allSelect={allSelect} selectedData={selectedData}/>
         {isOpen && <EditAction  setIsOpen={setIsOpen} userData={userData.filter((item) => item.id === currentSelectEdit)} handleEditSubmit={handleEditSubmit}/>}
         <button disabled={selectedData.length === 0} onClick={deleteSelected}>Delete Selected</button>
-        <Pagination 
-            totalPages={Math.floor(userData.length / MAX_ROWS)}
+      {totalPage >=0 &&   <Pagination 
+            totalPages={totalPage}
             page={page}
             setPage={setPage}
          />
+      }
 
     </div>
   )
